@@ -45,14 +45,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import javax.naming.InvalidNameException;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
@@ -63,10 +58,10 @@ import org.apache.commons.httpclient.params.HttpConnectionParams;
 
 /**
  * A SecureProtocolSocketFactory that uses JSSE to create sockets.
- * 
+ *
  * @author Michael Becke
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * 
+ *
  * @since 2.0
  * @deprecated Jakarta Commons HttpClient 3.x is deprecated in the Jenkins project.
  *  It is not recommended to use it in any new code.
@@ -85,20 +80,20 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 
     private static final Boolean STRICT_WITH_SUBDOMAIN =
 			Boolean.getBoolean(SSLProtocolSocketFactory.class.getName() + ".strictWithSubDomains");
-    
+
     // This is a a sorted list, if you insert new elements do it orderdered.
     private final static String[] BAD_COUNTRY_2LDS =
         {"ac", "co", "com", "ed", "edu", "go", "gouv", "gov", "info",
             "lg", "ne", "net", "or", "org"};
-    
+
     /**
      * Gets an singleton instance of the SSLProtocolSocketFactory.
      * @return a SSLProtocolSocketFactory
      */
     static SSLProtocolSocketFactory getSocketFactory() {
         return factory;
-    }    
-    
+    }
+
     /**
      * Constructor for SSLProtocolSocketFactory.
      */
@@ -128,26 +123,26 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
     /**
      * Attempts to get a new socket connection to the given host within the given time limit.
      * <p>
-     * This method employs several techniques to circumvent the limitations of older JREs that 
-     * do not support connect timeout. When running in JRE 1.4 or above reflection is used to 
-     * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older 
+     * This method employs several techniques to circumvent the limitations of older JREs that
+     * do not support connect timeout. When running in JRE 1.4 or above reflection is used to
+     * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older
      * JREs a controller thread is executed. The controller thread attempts to create a new socket
-     * within the given limit of time. If socket constructor does not return until the timeout 
+     * within the given limit of time. If socket constructor does not return until the timeout
      * expires, the controller terminates and throws an {@link ConnectTimeoutException}
      * </p>
-     *  
+     *
      * @param host the host name/IP
      * @param port the port on the host
      * @param localAddress the local host name/IP to bind the socket to
      * @param localPort the port on the local machine
      * @param params {@link HttpConnectionParams Http connection parameters}
-     * 
+     *
      * @return Socket a new socket
-     * 
+     *
      * @throws IOException if an I/O error occurs while creating the socket
      * @throws UnknownHostException if the IP address of the host cannot be
      * determined
-     * 
+     *
      * @since 3.0
      */
     public Socket createSocket(
@@ -209,10 +204,10 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
         verifyHostName(host, (SSLSocket) sslSocket);
         return sslSocket;
     }
-    
 
-    
-    
+
+
+
     /**
      * Verifies that the given hostname in certicifate is the hostname we are trying to connect to
      * http://www.cvedetails.com/cve/CVE-2012-5783/
@@ -220,7 +215,7 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
      * @param ssl
      * @throws IOException
      */
-    
+
 	private static void verifyHostName(String host, SSLSocket ssl)
 			throws IOException {
 		if (host == null) {
@@ -278,7 +273,7 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
         // I'm okay with being case-insensitive when comparing the host we used
         // to establish the socket to the hostname in the certificate.
         // Don't trim the CN, though.
-        
+
 		String[] cns = getCNs(cert);
 		String[] subjectAlts = getDNSSubjectAlts(cert);
 		verifyHostName(host, cns, subjectAlts);
@@ -316,12 +311,12 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 
 		// We're can be case-insensitive when comparing the host we used to
 		// establish the socket to the hostname in the certificate.
-		final String hostName = normaliseIPv6Address(host.trim().toLowerCase(Locale.ENGLISH));
+		final String hostName = normaliseIPv6Address(host.trim().toLowerCase(Locale.US));
 		boolean match = false;
 		for (final Iterator<String> it = names.iterator(); it.hasNext(); ) {
 			// Don't trim the CN, though!
 			String cn = it.next();
-			cn = cn.toLowerCase(Locale.ENGLISH);
+			cn = cn.toLowerCase(Locale.US);
 			// Store CN in StringBuilder in case we need to report an error.
 			buf.append(" <");
 			buf.append(cn);
@@ -403,15 +398,15 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 		} else {
 			return new String[0];
 		}
-	        
+
 	}
 
-	
+
 	private static boolean verifyHostName(final String host, final String cn){
 		if (doWildCard(cn) && !isIPAddress(host)) {
 			return matchesWildCard(cn, host);
-		} 
-		return host.equalsIgnoreCase(cn);		
+		}
+		return host.equalsIgnoreCase(cn);
 	}
 
 
@@ -442,15 +437,15 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
     			acceptableCountryWildcard(cn) &&
     			!isIPAddress(cn);
     }
-    
-    
-	private static final Pattern IPV4_PATTERN = 
+
+
+	private static final Pattern IPV4_PATTERN =
 			Pattern.compile("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 
-	private static final Pattern IPV6_STD_PATTERN = 
+	private static final Pattern IPV6_STD_PATTERN =
 			Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
 
-	private static final Pattern IPV6_HEX_COMPRESSED_PATTERN = 
+	private static final Pattern IPV6_HEX_COMPRESSED_PATTERN =
 			Pattern.compile("^((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)::((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)$");
 
 
@@ -458,7 +453,7 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 		return hostname != null
 				&& (
 						IPV4_PATTERN.matcher(hostname).matches()
-						|| IPV6_STD_PATTERN.matcher(hostname).matches() 
+						|| IPV6_STD_PATTERN.matcher(hostname).matches()
 						|| IPV6_HEX_COMPRESSED_PATTERN.matcher(hostname).matches()
 		);
 
@@ -470,7 +465,7 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 		// The [*.co.uk] problem is an interesting one. Should we just
 		// hope that CA's would never foolishly allow such a
 		// certificate to happen?
-    	
+
 		String[] parts = cn.split("\\.");
 		// Only checks for 3 levels, with country code of 2 letters.
 		if (parts.length > 3 || parts[parts.length - 1].length() != 2) {
@@ -490,9 +485,9 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 			// e.g. server
 			String prefix =  firstpart.substring(0, firstpart.length() - 1);
 			// skipwildcard part from cn
-			String suffix = cn.substring(firstpart.length()); 
+			String suffix = cn.substring(firstpart.length());
 			// skip wildcard part from host
-			String hostSuffix = hostName.substring(prefix.length());			
+			String hostSuffix = hostName.substring(prefix.length());
 			match = hostName.startsWith(prefix) && hostSuffix.endsWith(suffix);
 		} else {
 			match = hostName.endsWith(cn.substring(1));
@@ -515,47 +510,42 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 		return dots;
 	}
 
-	private static String[] getCNs(X509Certificate cert) throws SSLException {
+	public static String[] getCNs(X509Certificate cert) throws SSLException {
         // Note:  toString() seems to do a better job than getName()
         //
         // For example, getName() gives me this:
         // 1.2.840.113549.1.9.1=#16166a756c6975736461766965734063756362632e636f6d
         //
         // whereas toString() gives me this:
-        // EMAILADDRESS=juliusdavies@cucbc.com        
+        // EMAILADDRESS=juliusdavies@cucbc.com
 		String subjectPrincipal = cert.getSubjectX500Principal().toString();
-		
+
 		return extractCNs(subjectPrincipal);
 
 	}
 
 
-	static String[] extractCNs(final String subjectPrincipal) throws SSLException {
+	static String[] extractCNs(final String subjectPrincipal) {
 		if (subjectPrincipal == null) {
 			return null;
 		}
-		final List<String> cns = new ArrayList<>();
-		try {
-			final LdapName subjectDN = new LdapName(subjectPrincipal);
-			final List<Rdn> rdns = subjectDN.getRdns();
-			for (int i = rdns.size() - 1; i >= 0; i--) {
-				final Rdn rds = rdns.get(i);
-				final Attributes attributes = rds.toAttributes();
-				final Attribute cn = attributes.get("cn");
-				if (cn != null) {
-					try {
-						final Object value = cn.get();
-						if (value != null) {
-							cns.add(value.toString());
-						}
-					} catch (NamingException ignore) {
-					}
+		final List<String> cnList = new ArrayList<>();
+		StringTokenizer st = new StringTokenizer(subjectPrincipal, ",");
+		while(st.hasMoreTokens()) {
+			String tok = st.nextToken().trim();
+			if (tok.length() > 3) {
+				if (tok.substring(0, 3).equalsIgnoreCase("CN=")) {
+					cnList.add(tok.substring(3).replaceAll("\"", "").replaceAll("\\\\", ""));
 				}
 			}
-		} catch (InvalidNameException e) {
-			throw new SSLException(subjectPrincipal + " is not a valid X500 distinguished name");
 		}
-		return cns.isEmpty() ? null : cns.toArray(new String[cns.size()]);
+		if(!cnList.isEmpty()) {
+			String[] cns = new String[cnList.size()];
+			cnList.toArray(cns);
+			return cns;
+		} else {
+			return null;
+		}
 	}
 
     /**
@@ -664,5 +654,5 @@ public class SSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 		}
 		return Arrays.binarySearch(BAD_COUNTRY_2LDS, parts[1]) < 0;
 	}
-    
+
 }
