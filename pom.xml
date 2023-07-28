@@ -10,7 +10,7 @@
 
     <groupId>commons-httpclient</groupId>
     <artifactId>commons-httpclient</artifactId>
-    <version>3.1-jenkins-4-SNAPSHOT</version>
+    <version>3.1-jenkins-4-atlassian-1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>HttpCommons Client library</name>
     <properties>
@@ -26,8 +26,8 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/lib-commons-httpclient.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/lib-commons-httpclient.git</developerConnection>
+        <connection>scm:git:git://github.com/atlassian-forks/lib-commons-httpclient.git</connection>
+        <developerConnection>scm:git:git@github.com:atlassian-forks/lib-commons-httpclient.git</developerConnection>
         <tag>HEAD</tag>
       </scm>
 
@@ -78,7 +78,7 @@
         </plugins>
     </build>
 
-    <repositories>
+   <!-- <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
             <name>Jenkins Repository</name>
@@ -91,7 +91,18 @@
             <id>repo.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories>-->
+
+    <distributionManagement>
+        <repository>
+            <id>atlassian-3rdparty</id>
+            <url>https://packages.atlassian.com/maven/3rdparty</url>
+        </repository>
+        <snapshotRepository>
+            <id>atlassian-3rdparty-snapshot</id>
+            <url>https://packages.atlassian.com/maven/3rdparty-snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <profiles>
         <profile>
